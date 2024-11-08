@@ -1,0 +1,73 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Customer {
+  id String @id @default(cuid())
+  lastName String
+  firstName String
+  fullName String @unique
+  mobileNumber String
+  city String
+  isActive Boolean
+  dateCreated DateTime
+  timestamp DateTime @default(now())
+  
+  purchaseOders PurchaseOrder[]
+}
+
+model SKU {
+  id String @id @default(cuid())
+  name String @unique
+  code String @unique
+  unitPrice Float
+  imageUrl String[]
+  isActive Boolean
+  dateCreated DateTime
+  timestamp DateTime @default(now())
+
+  purchaseItems PurchaseItems[]
+}
+
+
+
+model PurchaseOrder {
+  id String @id @default(cuid())
+  customerId String
+  customer Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  status Status
+  amountDue Int
+  deliveryDate DateTime
+  dateCreated DateTime
+  timestamp DateTime @default(now())
+  
+  purchaseItems PurchaseItems[]
+}
+
+model PurchaseItems {
+    id String @id @default(cuid())
+  purchaseOrderId String
+  purchaseOrder PurchaseOrder @relation(fields: [purchaseOrderId], references: [id], onDelete: Cascade)
+  skuId String
+  sku SKU @relation(fields: [skuId], references: [id], onDelete: Cascade)
+  quantity Int
+  price Float
+  timestamp DateTime @default(now())
+}
+
+enum Status {
+  NEW
+  COMPLETED
+  CANCELLED
+}
